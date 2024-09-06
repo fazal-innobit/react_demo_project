@@ -21,7 +21,7 @@ workflows:
           account-url: AWS_ECR_ACCOUNT_URL_REACT
           aws-access-key-id: ACCESS_KEY_ID_REACT
           aws-secret-access-key: SECRET_ACCESS_KEY_REACT
-          dockerfile: ./DockerFile
+          dockerfile: ./Dockerfile
           path: .
           no-output-timeout: 20m
           region: AWS_REGION_REACT

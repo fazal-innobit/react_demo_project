@@ -1,53 +1,45 @@
 version: 2.1
 
 orbs:
-  aws-cli: circleci/aws-cli@2.0.3
+  aws-ecr: circleci/aws-ecr@7.0.0
+  aws-cli: circleci/aws-cli@2.0.0
+  node: circleci/node@2.0.2
 
 jobs:
-  build_and_push_image:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 20.10.14
-      - aws-cli/setup
-      - run:
-          name: Build and push image to Amazon ECR
-          command: |
-            # Build image
-            docker build -t $AWS_ECR_REACT_REPO:latest .
-            # Log in to Amazon ECR
-            aws ecr get-login-password --region $AWS_REGION_REACT | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL_REACT
-            # Tag image
-            docker tag $AWS_ECR_REACT_REPO:latest $AWS_ECR_ACCOUNT_URL_REACT/$AWS_ECR_REACT_REPO:latest
-            # Push image to ECR
-            docker push $AWS_ECR_ACCOUNT_URL_REACT/$AWS_ECR_REACT_REPO:latest
-
   Deploy_React_App_On_EC2:
     machine:
-      image: ubuntu-2004:current
-    resource_class: medium
+      enabled: true
     steps:
       - run:
           name: SSH_Into_EC2
-          command: ssh -o StrictHostKeyChecking=no ec2-user@3.83.20.127 './demo-react-ssh.sh'
+          command: ssh ec2-user@3.83.20.127 './demo-react-ssh.sh'
 
 workflows:
-  version: 2
-  build_and_deploy:
+  build_and_push_image:
     jobs:
-      - build_and_push_image:
+      - aws-ecr/build-and-push-image:
+          account-url: AWS_ECR_ACCOUNT_URL_REACT
+          aws-access-key-id: ACCESS_KEY_ID_REACT
+          aws-secret-access-key: SECRET_ACCESS_KEY_REACT
+          dockerfile: DockerFile
+          path: .
+          no-output-timeout: 20m
+          region: AWS_REGION_REACT
+          repo: $AWS_ECR_REACT_REPO
+          skip-when-tags-exist: false
+          tag: latest,0.1$CIRCLE_BUILD_NUM
           filters:
             branches:
               only: master
+
       - Deployment_React_Approval:
           type: approval
           requires:
-            - build_and_push_image
+            - aws-ecr/build-and-push-image
           filters:
             branches:
               only: master
+
       - Deploy_React_App_On_EC2:
           requires:
             - Deployment_React_Approval

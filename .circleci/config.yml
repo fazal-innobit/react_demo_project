@@ -9,6 +9,7 @@ jobs:
   Deploy_React_App_On_EC2:
     machine:
       image: ubuntu-2004:current
+    resource_class: medium
     steps:
       - run:
           name: SSH_Into_EC2

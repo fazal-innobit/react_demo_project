@@ -1,6 +1,5 @@
 version: 2.1
 
-
 orbs:
   aws-ecr: circleci/aws-ecr@7.0.0
   aws-cli: circleci/aws-cli@2.0.0
@@ -13,7 +12,7 @@ jobs:
     steps:
       - run:
           name: SSH_Into_EC2
-          command: ssh ec2-user@3.83.20.127 './demo-react-ssh.sh'
+          command: ssh ec2-user@3.83.20.127 './demo-react-ssh.sh';
 
 workflows:
   build_and_push_image:
@@ -22,7 +21,7 @@ workflows:
           account-url: AWS_ECR_ACCOUNT_URL_REACT
           aws-access-key-id: ACCESS_KEY_ID_REACT
           aws-secret-access-key: SECRET_ACCESS_KEY_REACT
-          dockerfile: DockerFile
+          dockerfile: ./DockerFile
           path: .
           no-output-timeout: 20m
           region: AWS_REGION_REACT

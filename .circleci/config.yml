@@ -38,7 +38,7 @@ workflows:
       - build_and_push_image:
           filters:
             branches:
-              only: main
+              only: master
 
       - deployment_react_approval:
           type: approval
@@ -46,11 +46,11 @@ workflows:
             - build_and_push_image
           filters:
             branches:
-              only: main
+              only: master
               
       - deploy_react_app_on_ec2:
           requires:
             - deployment_react_approval
           filters:
             branches:
-              only: main
+              only: master

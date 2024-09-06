@@ -18,8 +18,8 @@ workflows:
   build_and_push_image:
     jobs:
       - aws-ecr/build-and-push-image:
-          account-url: ${AWS_ECR_ACCOUNT_URL_REACT}
-          region: ${AWS_REGION_REACT}
+          account-url: AWS_ECR_ACCOUNT_URL_REACT
+          region: AWS_REGION_REACT
           repo: ${AWS_ECR_REACT_REPO}
           tag: 'latest,${CIRCLE_SHA1}'
           filters:

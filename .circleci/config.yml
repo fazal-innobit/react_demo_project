@@ -1,11 +1,29 @@
 version: 2.1
 
 orbs:
-  aws-ecr: circleci/aws-ecr@9.1.0
-  aws-cli: circleci/aws-cli@4.1.3
+  aws-cli: circleci/aws-cli@2.0.3
   node: circleci/node@5.2.0
 
 jobs:
+  build_and_push_image:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.14
+      - aws-cli/setup
+      - run:
+          name: Build Docker image
+          command: |
+            docker build -t $AWS_ECR_REACT_REPO:$CIRCLE_SHA1 .
+      - run:
+          name: Push image to ECR
+          command: |
+            aws ecr get-login-password --region $AWS_REGION_REACT | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL_REACT
+            docker tag $AWS_ECR_REACT_REPO:$CIRCLE_SHA1 $AWS_ECR_ACCOUNT_URL_REACT/$AWS_ECR_REACT_REPO:$CIRCLE_SHA1
+            docker push $AWS_ECR_ACCOUNT_URL_REACT/$AWS_ECR_REACT_REPO:$CIRCLE_SHA1
+
   deploy_react_app_on_ec2:
     machine:
       image: ubuntu-2004:202101-01
@@ -17,11 +35,7 @@ jobs:
 workflows:
   build_push_and_deploy:
     jobs:
-      - aws-ecr/build-and-push-image:
-          account-url: ${AWS_ECR_ACCOUNT_URL_REACT}
-          region: ${AWS_REGION_REACT}
-          repo: ${AWS_ECR_REACT_REPO}
-          tag: 'latest,${CIRCLE_BUILD_NUM}'
+      - build_and_push_image:
           filters:
             branches:
               only: main
@@ -29,7 +43,7 @@ workflows:
       - deployment_react_approval:
           type: approval
           requires:
-            - aws-ecr/build-and-push-image
+            - build_and_push_image
           filters:
             branches:
               only: main

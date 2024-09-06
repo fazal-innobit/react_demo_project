@@ -7,7 +7,7 @@ orbs:
 
 jobs:
   Deploy_React_App_On_EC2:
-    machinge:
+    machine:
       enabled: true
       steps:
         - run:
@@ -16,27 +16,27 @@ jobs:
 
 version: 2.1
 
-workflow:
+workflows:
   build_and_push_image:
     jobs:
-      - build-and-push-react-image:
-        account-url: AWS_ECR_ACCOUNT_URL_REACT
-        aws-access-key-id: ACCESS_KEY_ID_REACT
-        aws-secret-access-key: SECRET_ACCESS_KEY_REACT
-        path: .
-        no-output-timeout: 20m
-        region: AWS_REGION_REACT
-        repo: AWS_ECR_REACT_REPO
-        skip-when-tage-exist: false
-        tag: latest,$CIRCLE_BUILD_NUM
-        filters:
-          branches:
-            only: main
+      - aws-ecr/build-and-push-react-image:
+          account-url: AWS_ECR_ACCOUNT_URL_REACT
+          aws-access-key-id: ACCESS_KEY_ID_REACT
+          aws-secret-access-key: SECRET_ACCESS_KEY_REACT
+          path: .
+          no-output-timeout: 20m
+          region: AWS_REGION_REACT
+          repo: AWS_ECR_REACT_REPO
+          skip-when-tage-exist: false
+          tag: latest,$CIRCLE_BUILD_NUM
+          filters:
+            branches:
+              only: main
 
       - Deployment_React_Approval:
           type: approval
           require:
-            - build_and_push_react_image
+            - aws-ecr/build_and_push_react_image
           filters:
             branches:
               only: main
